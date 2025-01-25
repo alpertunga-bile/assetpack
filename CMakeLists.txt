@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.10.0)
-project(pxd-cpp-template VERSION 0.1.0 LANGUAGES C CXX)
+project(pxd-assetpack VERSION 0.1.0 LANGUAGES C CXX)
 
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmakes)
+
+set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/install)
+set(BUILD_SHARED_LIBS OFF)
 
 include(CTest)
 enable_testing()
@@ -19,21 +22,54 @@ option(PXD_BUILD_TEST "Build test executable" OFF)
 
 set(PXD_HEADER_FILES
 
+    ${PXD_THIRD_PARTY_DIR}/meshoptimizer/src/meshoptimizer.h
+    ${PXD_THIRD_PARTY_DIR}/FastLZ/fastlz.h
 )
 
 set(PXD_SOURCE_FILES
+    ${PXD_THIRD_PARTY_DIR}/FastLZ/fastlz.c
 
+    ${PXD_HEADER_FILES}
 )
 
 include_directories(
     ${PXD_INCLUDE_DIR}
+    ${PXD_THIRD_PARTY_DIR}/assimp/include
+    ${PXD_THIRD_PARTY_DIR}/rapidjson/include
 )
 
 set(COMMON_STD_HEADERS
 
 )
 
+# ------------------------------------------------------------------------------
+# -- Third-party
+
+# ---- Assimp
+set(ASSIMP_NO_EXPORT ON)
+set(ASSIMP_BUILD_TESTS OFF)
+set(ASSIMP_INSTALL OFF)
+
+add_subdirectory(${PXD_THIRD_PARTY_DIR}/assimp)
+
+# ---- GLSLang
+set(GLSLANG_TESTS_DEFAULT OFF)
+set(GLSLANG_ENABLE_INSTALL_DEFAULT OFF)
+set(ENABLE_GLSLANG_JS OFF)
+
+add_subdirectory(${PXD_THIRD_PARTY_DIR}/glslang)
+
+# ---- Mesh Optimizer
+set(MESHOPT_INSTALL OFF)
+
+add_subdirectory(${PXD_THIRD_PARTY_DIR}/meshoptimizer)
+
+# ------------------------------------------------------------------------------
+
 set(LIBS_TO_LINK
+    assimp::assimp
+    glslang
+    meshoptimizer
 )
 
 add_executable(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp ${PXD_SOURCE_FILES})
