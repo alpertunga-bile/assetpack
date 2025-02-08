@@ -45,6 +45,8 @@ set(COMMON_STD_HEADERS
 # ------------------------------------------------------------------------------
 # -- Third-party
 
+include(FetchContent)
+
 # ---- Assimp
 set(ASSIMP_NO_EXPORT ON)
 set(ASSIMP_BUILD_TESTS OFF)
@@ -64,12 +66,21 @@ set(MESHOPT_INSTALL OFF)
 
 add_subdirectory(${PXD_THIRD_PARTY_DIR}/meshoptimizer)
 
+# ---- Cryptopp
+FetchContent_Declare(
+  cryptopp_lib
+  GIT_REPOSITORY https://github.com/abdes/cryptopp-cmake.git
+  GIT_TAG f815f6284684be6ab03af4b6c273359331c61241
+)
+FetchContent_MakeAvailable(cryptopp_lib)
+
 # ------------------------------------------------------------------------------
 
 set(LIBS_TO_LINK
     assimp::assimp
     glslang
     meshoptimizer
+    cryptopp::cryptopp
 )
 
 add_executable(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp ${PXD_SOURCE_FILES})
@@ -130,4 +141,3 @@ unset(PXD_BUILD_TEST CACHE)
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
-        
