@@ -22,7 +22,6 @@ option(PXD_BUILD_TEST "Build test executable" OFF)
 
 set(PXD_HEADER_FILES
 
-    ${PXD_THIRD_PARTY_DIR}/meshoptimizer/src/meshoptimizer.h
     ${PXD_THIRD_PARTY_DIR}/FastLZ/fastlz.h
 )
 
@@ -34,8 +33,6 @@ set(PXD_SOURCE_FILES
 
 include_directories(
     ${PXD_INCLUDE_DIR}
-    ${PXD_THIRD_PARTY_DIR}/assimp/include
-    ${PXD_THIRD_PARTY_DIR}/rapidjson/include
 )
 
 set(COMMON_STD_HEADERS
@@ -47,12 +44,23 @@ set(COMMON_STD_HEADERS
 
 include(FetchContent)
 
+# ---- Rapidjson
+FetchContent_Declare(
+  rapidjson
+  GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
+  GIT_TAG master
+)
+
 # ---- Assimp
 set(ASSIMP_NO_EXPORT ON)
 set(ASSIMP_BUILD_TESTS OFF)
 set(ASSIMP_INSTALL OFF)
 
-add_subdirectory(${PXD_THIRD_PARTY_DIR}/assimp)
+FetchContent_Declare(
+  assimp
+  GIT_REPOSITORY https://github.com/assimp/assimp.git
+  GIT_TAG master
+)
 
 # ---- GLSLang
 set(GLSLANG_TESTS_DEFAULT OFF)
@@ -64,7 +72,11 @@ add_subdirectory(${PXD_THIRD_PARTY_DIR}/glslang)
 # ---- Mesh Optimizer
 set(MESHOPT_INSTALL OFF)
 
-add_subdirectory(${PXD_THIRD_PARTY_DIR}/meshoptimizer)
+FetchContent_Declare(
+  meshoptimizer
+  GIT_REPOSITORY https://github.com/zeux/meshoptimizer.git
+  GIT_TAG master
+)
 
 # ---- Cryptopp
 FetchContent_Declare(
@@ -72,7 +84,13 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/abdes/cryptopp-cmake.git
   GIT_TAG f815f6284684be6ab03af4b6c273359331c61241
 )
-FetchContent_MakeAvailable(cryptopp_lib)
+
+FetchContent_MakeAvailable(
+  cryptopp_lib
+  meshoptimizer
+  assimp
+  rapidjson
+)
 
 # ------------------------------------------------------------------------------
 
