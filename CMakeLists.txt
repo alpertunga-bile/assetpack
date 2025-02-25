@@ -9,10 +9,37 @@ set(BUILD_SHARED_LIBS OFF)
 include(CTest)
 enable_testing()
 
-include(setup)
+set(CXX_VERSION 20)
+set(CMAKE_CXX_STANDARD ${CXX_VERSION})
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set_cxx(20)
-enable_iwyu()
+if(NOT MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++${CXX_VERSION}")
+endif()
+
+if(NOT WIN32)
+  set(IWYU_ARGS "include-what-you-use -w -Xiwyu --verbose=7")
+  add_compile_definitions(CMAKE_CXX_INCLUDE_WHAT_YOU_USE=${IWYU_ARGS})
+endif(NOT WIN32)
+
+if(${CMAKE_BUILD_TYPE} MATCHES "Release")
+
+  message(STATUS "Optimizations are opened for ${PROJECT_NAME}")
+
+  include(CheckIPOSupported)
+  check_ipo_supported(RESULT is_supported OUTPUT error)
+
+  if(is_supported)
+    message(STATUS "Opening LTO")
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+  endif(is_supported)
+
+  if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    message(STATUS "Adding -O3 -march=native flags")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native")
+  endif(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+
+endif(${CMAKE_BUILD_TYPE} MATCHES "Release")
 
 set(PXD_THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 set(PXD_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/includes)
@@ -45,10 +72,15 @@ set(COMMON_STD_HEADERS
 include(FetchContent)
 
 # ---- Rapidjson
+set(RAPIDJSON_BUILD_DOC OFF)
+set(RAPIDJSON_BUILD_EXAMPLES OFF)
+set(RAPIDJSON_BUILD_TESTS OFF)
+
 FetchContent_Declare(
   rapidjson
   GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
   GIT_TAG master
+  GIT_SHALLOW 1
 )
 
 # ---- Assimp
@@ -60,6 +92,7 @@ FetchContent_Declare(
   assimp
   GIT_REPOSITORY https://github.com/assimp/assimp.git
   GIT_TAG master
+  GIT_SHALLOW 1
 )
 
 # ---- GLSLang
@@ -76,6 +109,7 @@ FetchContent_Declare(
   meshoptimizer
   GIT_REPOSITORY https://github.com/zeux/meshoptimizer.git
   GIT_TAG master
+  GIT_SHALLOW 1
 )
 
 # ---- Cryptopp
@@ -83,6 +117,7 @@ FetchContent_Declare(
   cryptopp_lib
   GIT_REPOSITORY https://github.com/abdes/cryptopp-cmake.git
   GIT_TAG f815f6284684be6ab03af4b6c273359331c61241
+  GIT_SHALLOW 1
 )
 
 FetchContent_MakeAvailable(
